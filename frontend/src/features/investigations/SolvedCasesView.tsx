@@ -30,7 +30,15 @@ import {
   Globe,
   RefreshCw,
   X,
-  Share2
+  Share2,
+  Play,
+  RotateCcw,
+  Smartphone,
+  Send,
+  ShieldAlert,
+  CheckCheck,
+  Zap,
+  ArrowLeft
 } from 'lucide-react';
 
 interface SolvedCasesViewProps {
@@ -51,7 +59,11 @@ export const SolvedCasesView: React.FC<SolvedCasesViewProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedCaseModal, setSelectedCaseModal] = useState<SolvedCase | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [activeTabSection, setActiveTabSection] = useState<'cases' | 'inter-agency'>('cases');
+  const [activeTabSection, setActiveTabSection] = useState<'cases' | 'storytelling' | 'inter-agency'>('cases');
+
+  // Story Mode State
+  const [selectedStoryIndex, setSelectedStoryIndex] = useState<number>(0);
+  const [storyStage, setStoryStage] = useState<number>(1); // 1: Money Gone, 2: Case Filed, 3: How AI & Police Reacted, 4: Interception & Recovery
 
   // Form State for Add New Solved Case
   const [formData, setFormData] = useState({
@@ -153,6 +165,202 @@ export const SolvedCasesView: React.FC<SolvedCasesViewProps> = ({
     'Digital Arrest Impersonation',
   ];
 
+  // Curated Interactive Stories for Case Reconstruction
+  const interactiveStories = [
+    {
+      id: 'story-1',
+      title: 'The Midnight Power Cut Phish (Operation Vidyut Freeze)',
+      location: 'Cyber Crime Police Station (CCSU), Patna Central',
+      fir: 'FIR No. 89/2026 u/s 420/419/120B IPC & 66C/66D IT Act',
+      crimeCategory: 'Electricity Bill Disconnection APK Phishing',
+      primaryMuleAccount: 'ACC-4321',
+      muleBank: 'State Bank of India, Patna Main',
+      accusedName: 'Manoj Kumar Mandal @ Chhotu (Age 28, Jamtara module)',
+      totalLoss: '₹15,40,000',
+      totalRecovered: '₹15,20,000 (98.7% Recovery in 38 minutes)',
+      victimName: 'Prof. Rameshwar Sharma (Age 61, Retired Govt Teacher, Kankarbagh)',
+      
+      // Stage 1: How Money Was Stolen
+      stage1: {
+        title: 'Stage 1: How the Money Was Gone (The Trap & Fast Drain)',
+        subtitle: 'The psychological manipulation, SMS spoofing, and 180-second rapid drain',
+        timestamp: '2026-08-14, 08:42 PM IST',
+        smsMessage: 'Dear Consumer, your electricity connection #BIH-84912 will be disconnected TONIGHT at 9:30 PM due to pending bill of ₹210. Immediately call Electricity Nodal Officer at 98351-44321 or pay via official Suvidha Power App.',
+        narrative: [
+          'Prof. Sharma panicked at the prospect of the power supply being cut off late at night with elderly patients at home. He dialed the phone number listed in the SMS.',
+          'The call was answered by Manoj Kumar Mandal posing as "Executive Engineer R. K. Verma, North Bihar Power Distribution Co. Ltd."',
+          'The fraudster politely instructed him: "Sir, our billing server is updating. Just install this official 10-second verification utility and pay ₹10 to clear your meter flag."',
+          'The link installed a malicious APK (Suvidha_Power.apk) with SMS and accessibility permissions, acting as a remote screen-scraping trojan.',
+          'When the victim attempted the ₹10 transaction, the trojan hijacked the net banking credentials and suppressed OTP notifications.',
+          'Between 08:58 PM and 09:02 PM (within just 4 minutes), three consecutive unauthorized debits of ₹4,90,000, ₹5,50,000, and ₹5,00,000 hit the victim account, draining ₹15,40,000 into beneficiary account ACC-4321.'
+        ],
+        debitBreakdown: [
+          { time: '08:58 PM', utr: 'UTR-629104829102', amount: '₹4,90,000', to: 'ACC-4321 (SBI)' },
+          { time: '09:00 PM', utr: 'UTR-629104829103', amount: '₹5,50,000', to: 'ACC-4321 (SBI)' },
+          { time: '09:02 PM', utr: 'UTR-629104829104', amount: '₹5,00,000', to: 'ACC-4321 (SBI)' }
+        ]
+      },
+
+      // Stage 2: How Case Was Filed
+      stage2: {
+        title: 'Stage 2: How the Case Was Filed (Citizen & Police Intake)',
+        subtitle: 'National Cyber Helpline 1930 reporting and formal FIR registration',
+        timestamp: '2026-08-14, 09:08 PM IST (6 minutes after fraud)',
+        helpline: '1930 (Citizen Financial Cyber Fraud Reporting System - CFCFRMS)',
+        acknowledgementNo: 'NCRP-2026-BIH-09142',
+        firNumber: 'FIR No. 89/2026, CCSU Patna',
+        narrative: [
+          'At 09:08 PM, the victim saw the bank SMS balance drop to ₹312. In panic, his daughter remembered the National Cyber Helpline number 1930 and called immediately.',
+          'The Bihar Police Cyber Helpdesk operator at Patna CCSU headquarters answered within 12 seconds and initiated the Citizen Financial Cyber Fraud Reporting System (CFCFRMS) ticket.',
+          'The operator recorded the victim bank name (SBI), account number, transaction timestamps, and the three Bank UTR numbers.',
+          'The NCRP system generated ticket acknowledgement NCRP-2026-BIH-09142 and pushed a priority automated freeze webhook to the beneficiary bank nodal officer.',
+          'At 10:15 PM, the victim arrived at the Cyber Crime Police Station (CCSU), Patna, submitting the APK file, call recording, and bank statement.',
+          'Inspector Vikramaditya Singh registered FIR No. 89/2026 under Sections 420, 419, 120B IPC and 66C/66D Information Technology Act.'
+        ],
+        evidenceLogged: [
+          'Victim Bank Statement showing 3 unauthorized IMPS debits (₹15.4L)',
+          'Malicious APK file (Suvidha_Power.apk) dumped from victim handset',
+          'Call Detail Record (CDR) of spoofed caller +91-98351-44321',
+          'NCRP 1930 official acknowledgement token and UTR logs'
+        ]
+      },
+
+      // Stage 3: How FraudTrace AI Reacted
+      stage3: {
+        title: 'Stage 3: How FraudTrace AI & Police Reacted (The Golden Hour Algorithm)',
+        subtitle: 'Automated mule detection, pass-through ratio trigger, and rapid graph traversal',
+        timestamp: '2026-08-14, 09:10 PM IST (T+2 mins after 1930 alert)',
+        detectionVelocity: 'Pass-through velocity detected in 84 seconds',
+        muleRiskScore: '100 / 100 (CRITICAL MULE)',
+        narrative: [
+          'T + 2 Min: FraudTrace AI ingested the NCRP 1930 ticket webhook. The engine matched the UTR to beneficiary account ACC-4321.',
+          'T + 4 Min: The Risk Scoring Engine evaluated ACC-4321: the account received ₹15.40 Lakhs and within 180 seconds began disbursing 98.4% of the funds outward across 6 Layer-2 accounts.',
+          'Pass-Through Layering Anomaly triggered: High turnover with near-zero retention ratio (pass-through index = 0.984). Risk tier immediately elevated to CRITICAL (100/100).',
+          'T + 8 Min: The Graph Analytics module traversed the network 3 hops deep. It revealed that 5 Layer-2 accounts were opened with student KYCs in HDFC and PNB, while the 6th account was attempting an immediate ATM withdrawal in Raxaul (Indo-Nepal border).',
+          'T + 12 Min: Telecom triangulation via DoT TAFCOP API showed the suspect mobile number +91-98351-44321 had 18 active SIM cards issued against the same forged Aadhaar photograph, transmitting from Kankarbagh, Patna.'
+        ],
+        aiTriggers: [
+          { name: 'Velocity Inflow-to-Outflow Ratio', value: '98.4% diverted in 3 mins', status: 'CRITICAL ALERT' },
+          { name: 'Pass-Through Layering Index', value: '0.984 (Benchmark > 0.85)', status: 'CONFIRMED MULE' },
+          { name: 'Multi-Hop Dispersal Fan-out', value: '1 -> 6 -> 14 accounts', status: 'SYNCHRONIZED RING' },
+          { name: 'TAFCOP Telecom Anomaly', value: '18 SIMs on single photo', status: 'PROXY SIM CLUSTER' }
+        ]
+      },
+
+      // Stage 4: Police Interception & Recovery
+      stage4: {
+        title: 'Stage 4: The Interception, Rapid Freeze & Arrest (Justice Delivered)',
+        subtitle: 'Section 106 BNSS digital lien, physical raid, and 98.7% fund restoration',
+        timestamp: '2026-08-14, 09:24 PM to 10:45 PM IST',
+        recoveredAmount: '₹15,20,000 (Out of ₹15,40,000)',
+        accusedArrested: 'Manoj Kumar Mandal @ Chhotu + 2 accomplices',
+        narrative: [
+          'T + 16 Min (09:24 PM): FraudTrace AI generated automated Section 106 BNSS / 102 CrPC digital freezing directives signed by the DSP Cyber Cell.',
+          'Direct APIs pushed the lien order into the Core Banking Systems of SBI, HDFC Bank, and Punjab National Bank. Exactly ₹11,40,000 was locked and frozen in Layer-2 accounts before the cash could be pulled.',
+          'T + 38 Min (09:46 PM): CCSU Patna Quick Response Team, guided by real-time cell tower triangulation from FraudTrace AI, raided a rented flat in Kankarbagh Colony.',
+          'Accused Manoj Kumar Mandal @ Chhotu and two associates were caught red-handed with a live SIM box, 18 smartphones, 64 active SIM cards, and a micro-ATM terminal.',
+          'Police seized ₹3,80,000 in physical cash withdrawn just minutes prior, bringing total intercepted and seized funds to ₹15,20,000.',
+          'Judicial Closure: On 2026-08-28, the Chief Judicial Magistrate Court, Patna, ordered the release of ₹15,20,000 directly back into Prof. Sharma pension account under Section 457 CrPC/BNSS.'
+        ],
+        seizures: [
+          '₹3,80,000 in freshly withdrawn cash bundles',
+          '₹11,40,000 frozen under Bank Lien u/s 106 BNSS',
+          '18 Android handsets & 1 GSM SIM-box device',
+          '64 Pre-activated SIM cards (Assam & Bengal series)',
+          '14 ATM Debit cards and 1 Micro-ATM Point-of-Sale machine'
+        ]
+      }
+    },
+    {
+      id: 'story-2',
+      title: 'The "Rate 5-Star Hotels" Telegram Scam (Operation Gaya Taskbuster)',
+      location: 'Cyber Thana Gaya, Bihar',
+      fir: 'FIR No. 142/2026 u/s 318(4)/316(2)/61(2) BNS & 66D IT Act',
+      crimeCategory: 'Telegram Part-Time Task & Crypto Investment Scam',
+      primaryMuleAccount: 'ACC-8765',
+      muleBank: 'HDFC Bank, Gaya Branch',
+      accusedName: 'Suraj Prakash Verma (Age 31, Gaya)',
+      totalLoss: '₹82,00,000',
+      totalRecovered: '₹64,50,000 (78.6% Recovery)',
+      victimName: 'Ananya Sen (Age 29, Software Engineer, Gaya)',
+      stage1: {
+        title: 'Stage 1: How the Money Was Gone (The Micro-Task Honeypot)',
+        subtitle: 'Initial ₹300 trust payouts leading to VIP crypto deposit traps',
+        timestamp: '2026-09-01, 11:30 AM IST',
+        smsMessage: 'Hi Ananya! Earn ₹3,000-₹8,000 daily from home by rating Google Maps hotels. No investment needed. Contact HR Manager on Telegram: @HotelReviewJob_2026',
+        narrative: [
+          'Victim was added to a Telegram channel showing hundreds of fake payout screenshots.',
+          'Completed 3 hotel review tasks and actually received ₹900 via UPI into her account to build complete trust.',
+          'On Day 2, victim was prompted to upgrade to "VIP Merchant Task" requiring ₹50,000 deposit to unlock ₹85,000.',
+          'A fake web dashboard displayed a simulated balance of ₹1,40,000, but "withdrawal was frozen due to a tax code error."',
+          'Over 48 hours, victim transferred a total of ₹82,00,000 across multiple tranches into designated "escrow accounts", primarily ACC-8765.'
+        ],
+        debitBreakdown: [
+          { time: 'Day 1, 02:15 PM', utr: 'UTR-981028312011', amount: '₹5,00,000', to: 'ACC-8765 (HDFC)' },
+          { time: 'Day 1, 04:30 PM', utr: 'UTR-981028312019', amount: '₹25,00,000', to: 'ACC-8765 (HDFC)' },
+          { time: 'Day 2, 10:00 AM', utr: 'UTR-981028312055', amount: '₹52,00,000', to: 'ACC-8765 (HDFC)' }
+        ]
+      },
+      stage2: {
+        title: 'Stage 2: How the Case Was Filed (Citizen & Police Intake)',
+        subtitle: '1930 NCRP complaint and Gaya Cyber Thana FIR registration',
+        timestamp: '2026-09-02, 02:45 PM IST',
+        helpline: '1930 NCRP CFCFRMS',
+        acknowledgementNo: 'NCRP-2026-BIH-11029',
+        firNumber: 'FIR No. 142/2026, Cyber Thana Gaya',
+        narrative: [
+          'Victim realized the extortion when the scammer demanded another ₹20 Lakhs as "RBI clearance fee".',
+          'Called 1930 immediately. Operator registered complaint NCRP-2026-BIH-11029.',
+          'Victim rushed to Cyber Thana Gaya and met DSP Priya Ranjan.',
+          'Detailed digital evidence logged: Telegram chat exports, fake dashboard URLs, transaction slips.'
+        ],
+        evidenceLogged: [
+          'Full Telegram conversation transcript and admin usernames',
+          'Bank transaction statements with 3 major RTGS transfers',
+          'IP addresses and hosting logs of fraudulent web application'
+        ]
+      },
+      stage3: {
+        title: 'Stage 3: How FraudTrace AI & Police Reacted (The Interception Engine)',
+        subtitle: 'Multi-complaint correlation and rapid merchant account freezing',
+        timestamp: '2026-09-02, 03:00 PM IST',
+        detectionVelocity: 'Graph correlation found 5 victim links in 2.1 minutes',
+        muleRiskScore: '91 / 100 (HIGH RISK)',
+        narrative: [
+          'FraudTrace AI matched account ACC-8765 to 5 previous 1930 citizen complaints across Patna, Gaya, and Ranchi.',
+          'AI graph engine uncovered that ACC-8765 was functioning as an aggregator account channeling funds to 3 shell merchant current accounts.',
+          'Funds were queued for conversion into USDT cryptocurrency via P2P OTC brokers.',
+          'Immediate risk tag broadcast sent to all partner banks.'
+        ],
+        aiTriggers: [
+          { name: 'Multi-Complaint Correlation', value: '5 NCRP Complaints mapped', status: 'CONFIRMED SYNDICATE' },
+          { name: 'Current Account Turnaround', value: 'Rapid zeroing within 2 hours', status: 'SHELL MERCHANT' }
+        ]
+      },
+      stage4: {
+        title: 'Stage 4: Police Interception & Recovery',
+        subtitle: 'Freezing ₹64.5 Lakhs in intermediary accounts and physical arrest',
+        timestamp: '2026-09-02, 04:30 PM IST',
+        recoveredAmount: '₹64,50,000 (78.6% Recovered)',
+        accusedArrested: 'Suraj Prakash Verma (Mastermind in custody)',
+        narrative: [
+          'Section 106 BNSS orders dispatched to HDFC Bank and ICICI Bank.',
+          '₹64,50,000 successfully frozen in the intermediary shell merchant accounts before crypto transfer.',
+          'Police raided accused residence in Civil Lines, Gaya, arresting Suraj Prakash Verma.',
+          'Seized 3 laptops, 8 passbooks of shell firms, 2 POS machines, and 22 debit cards.'
+        ],
+        seizures: [
+          '₹64,50,000 frozen under legal lien',
+          '3 Laptops with foreign Telegram session logs',
+          '8 Shell enterprise passbooks and GST filings',
+          '22 ATM debit cards'
+        ]
+      }
+    }
+  ];
+
+  const currentStory = interactiveStories[selectedStoryIndex] || interactiveStories[0];
+
   return (
     <div className="space-y-6">
       {/* Top Banner / Header */}
@@ -170,17 +378,24 @@ export const SolvedCasesView: React.FC<SolvedCasesViewProps> = ({
               Solved Cyber Crime Case Stories & Mule Ring Busts
             </h1>
             <p className="text-sm text-slate-300 leading-relaxed">
-              Judicial records, verified accused profiles, bank accounts, fast-layering routes, and fund recovery memos from real-world cyber fraud investigations. Directly integrated with National Cybercrime Reporting Portal (1930) and CCTNS.
+              Official judicial records, accused profiles, bank accounts, fast-layering routes, and interactive story mode showing how money was lost, how citizens filed cases, and how police intervened to freeze funds.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             <button
+              onClick={() => setActiveTabSection('storytelling')}
+              className="inline-flex items-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white rounded-xl font-bold text-sm shadow-md transition transform active:scale-95"
+            >
+              <Sparkles className="w-4 h-4 text-amber-200" />
+              <span>Play Interactive Case Stories</span>
+            </button>
+            <button
               onClick={() => setIsAddModalOpen(true)}
               className="inline-flex items-center space-x-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-semibold text-sm shadow-md transition transform active:scale-95"
             >
               <Plus className="w-4 h-4" />
-              <span>Log Solved Case Dossier</span>
+              <span>Log Solved Case</span>
             </button>
             <button
               onClick={loadCases}
@@ -223,7 +438,7 @@ export const SolvedCasesView: React.FC<SolvedCasesViewProps> = ({
       </div>
 
       {/* View Switcher Tabs */}
-      <div className="flex border-b border-slate-200 bg-white rounded-xl p-1.5 shadow-sm">
+      <div className="flex flex-wrap border-b border-slate-200 bg-white rounded-xl p-1.5 shadow-sm gap-1">
         <button
           onClick={() => setActiveTabSection('cases')}
           className={`flex items-center space-x-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition ${
@@ -235,6 +450,19 @@ export const SolvedCasesView: React.FC<SolvedCasesViewProps> = ({
           <Award className="w-4 h-4" />
           <span>Solved Case Dossiers & Accused Profiles ({cases.length})</span>
         </button>
+
+        <button
+          onClick={() => setActiveTabSection('storytelling')}
+          className={`flex items-center space-x-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition ${
+            activeTabSection === 'storytelling'
+              ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow'
+              : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50'
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-amber-300" />
+          <span>Interactive Story Mode: How Money Was Gone, Case Filed & How Police Reacted</span>
+        </button>
+
         <button
           onClick={() => setActiveTabSection('inter-agency')}
           className={`flex items-center space-x-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition ${
@@ -248,7 +476,557 @@ export const SolvedCasesView: React.FC<SolvedCasesViewProps> = ({
         </button>
       </div>
 
-      {activeTabSection === 'cases' ? (
+      {/* SECTION 1: INTERACTIVE STORY MODE */}
+      {activeTabSection === 'storytelling' && (
+        <div className="space-y-6">
+          {/* Story Selector Header */}
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <div className="text-xs font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4" />
+                <span>Interactive Crime Reconstruction & Enforcement Storyboard</span>
+              </div>
+              <h2 className="text-lg font-bold text-slate-900 mt-1">
+                Choose an Investigation Case Study to Reconstruct
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Walk through the crime minute-by-minute: from initial deception to 1930 filing, AI pass-through detection, and live police interception.
+              </p>
+            </div>
+
+            <div className="flex gap-2">
+              {interactiveStories.map((story, idx) => (
+                <button
+                  key={story.id}
+                  onClick={() => {
+                    setSelectedStoryIndex(idx);
+                    setStoryStage(1);
+                  }}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                    selectedStoryIndex === idx
+                      ? 'bg-slate-900 text-white shadow'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  <Play className={`w-3 h-3 ${selectedStoryIndex === idx ? 'text-amber-400' : 'text-slate-400'}`} />
+                  <span>Case #{idx + 1}: {story.crimeCategory.split(' ')[0]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Active Story Card Container */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-md overflow-hidden">
+            {/* Story Banner Header */}
+            <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white p-6 border-b border-slate-700">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-semibold text-blue-300">
+                    <span>{currentStory.location}</span>
+                    <span>•</span>
+                    <span className="font-mono text-white">{currentStory.fir}</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-white mt-1">
+                    {currentStory.title}
+                  </h3>
+                  <div className="text-xs text-slate-300 mt-1 flex flex-wrap gap-4">
+                    <span>Victim: <strong className="text-white">{currentStory.victimName}</strong></span>
+                    <span>Accused: <strong className="text-rose-400">{currentStory.accusedName}</strong></span>
+                    <span>Primary Mule: <strong className="text-amber-300 font-mono">{currentStory.primaryMuleAccount} ({currentStory.muleBank})</strong></span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 bg-white/5 p-3 rounded-xl border border-white/10 shrink-0">
+                  <div className="text-right">
+                    <div className="text-[10px] text-slate-400 font-bold uppercase">Outcome</div>
+                    <div className="text-sm font-bold text-emerald-400">{currentStory.totalRecovered}</div>
+                    <div className="text-[11px] text-slate-300">of {currentStory.totalLoss} loss</div>
+                  </div>
+                  <button
+                    onClick={() => onSelectAccount(currentStory.primaryMuleAccount)}
+                    className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow transition"
+                  >
+                    Trace in Graph
+                  </button>
+                </div>
+              </div>
+
+              {/* 4-Stage Stepper Navigation */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-6 pt-5 border-t border-white/10">
+                <button
+                  onClick={() => setStoryStage(1)}
+                  className={`p-3 rounded-xl text-left transition flex items-center gap-3 ${
+                    storyStage === 1
+                      ? 'bg-rose-600 text-white shadow-lg ring-2 ring-rose-400'
+                      : 'bg-white/10 text-slate-300 hover:bg-white/15'
+                  }`}
+                >
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
+                    storyStage === 1 ? 'bg-white text-rose-600' : 'bg-white/20 text-white'
+                  }`}>
+                    1
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold">1. Money Stolen</div>
+                    <div className="text-[10px] opacity-80 truncate">How victim lost funds</div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setStoryStage(2)}
+                  className={`p-3 rounded-xl text-left transition flex items-center gap-3 ${
+                    storyStage === 2
+                      ? 'bg-amber-600 text-white shadow-lg ring-2 ring-amber-400'
+                      : 'bg-white/10 text-slate-300 hover:bg-white/15'
+                  }`}
+                >
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
+                    storyStage === 2 ? 'bg-white text-amber-600' : 'bg-white/20 text-white'
+                  }`}>
+                    2
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold">2. Case Filed</div>
+                    <div className="text-[10px] opacity-80 truncate">1930 & FIR intake</div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setStoryStage(3)}
+                  className={`p-3 rounded-xl text-left transition flex items-center gap-3 ${
+                    storyStage === 3
+                      ? 'bg-blue-600 text-white shadow-lg ring-2 ring-blue-400'
+                      : 'bg-white/10 text-slate-300 hover:bg-white/15'
+                  }`}
+                >
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
+                    storyStage === 3 ? 'bg-white text-blue-600' : 'bg-white/20 text-white'
+                  }`}>
+                    3
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold">3. How AI Reacted</div>
+                    <div className="text-[10px] opacity-80 truncate">Pass-through detection</div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setStoryStage(4)}
+                  className={`p-3 rounded-xl text-left transition flex items-center gap-3 ${
+                    storyStage === 4
+                      ? 'bg-emerald-600 text-white shadow-lg ring-2 ring-emerald-400'
+                      : 'bg-white/10 text-slate-300 hover:bg-white/15'
+                  }`}
+                >
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
+                    storyStage === 4 ? 'bg-white text-emerald-600' : 'bg-white/20 text-white'
+                  }`}>
+                    4
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold">4. Police Intercept</div>
+                    <div className="text-[10px] opacity-80 truncate">Freeze & recovery</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Stage Content Panel */}
+            <div className="p-6">
+              {/* STAGE 1: HOW THE MONEY WAS GONE */}
+              {storyStage === 1 && (
+                <div className="space-y-6">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+                    <div>
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        <span>STAGE 1: THE THEFT & PHISHING DECEPTION</span>
+                      </div>
+                      <h4 className="text-lg font-bold text-slate-900 mt-2">
+                        {currentStory.stage1.title}
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {currentStory.stage1.subtitle} • {currentStory.stage1.timestamp}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => setStoryStage(2)}
+                      className="inline-flex items-center space-x-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow transition"
+                    >
+                      <span>Proceed to Stage 2: How Case Was Filed</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    {/* Left: Narrative Timeline */}
+                    <div className="lg:col-span-7 space-y-4">
+                      <div className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                        Chronological Scam Progression
+                      </div>
+                      <div className="space-y-3">
+                        {currentStory.stage1.narrative.map((paragraph, i) => (
+                          <div key={i} className="flex items-start space-x-3 p-3.5 bg-slate-50 rounded-xl border border-slate-100 text-xs">
+                            <span className="w-6 h-6 rounded-full bg-rose-100 text-rose-800 font-bold flex items-center justify-center shrink-0 text-[11px]">
+                              {i + 1}
+                            </span>
+                            <p className="text-slate-700 leading-relaxed">{paragraph}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Right: Phone & Debit Mockup */}
+                    <div className="lg:col-span-5 space-y-4">
+                      {/* Fake SMS Screen */}
+                      <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-lg border border-slate-700 space-y-3">
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                          <div className="flex items-center space-x-2 text-xs font-semibold">
+                            <Smartphone className="w-4 h-4 text-blue-400" />
+                            <span>Victim's Phone SMS Inbox</span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-mono">08:42 PM</span>
+                        </div>
+                        <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700/80 text-xs text-slate-200 leading-relaxed font-mono">
+                          <div className="text-amber-400 font-bold text-[11px] mb-1">Sender: VM-BIH-POW</div>
+                          {currentStory.stage1.smsMessage}
+                        </div>
+                        <div className="text-[11px] text-rose-400 flex items-center gap-1.5 font-medium">
+                          <AlertTriangle className="w-3.5 h-3.5" />
+                          <span>Fake urgency triggered victim into dialing scammer number</span>
+                        </div>
+                      </div>
+
+                      {/* Unauthorized Debit Ledger */}
+                      <div className="bg-rose-50 p-4 rounded-2xl border border-rose-200 space-y-2.5">
+                        <div className="flex justify-between items-center border-b border-rose-200/80 pb-2">
+                          <span className="text-xs font-bold text-rose-900 uppercase">Unauthorized Fund Drain Ledger</span>
+                          <span className="text-xs font-mono font-bold text-rose-700">Total: {currentStory.totalLoss}</span>
+                        </div>
+                        <div className="space-y-2 text-xs">
+                          {currentStory.stage1.debitBreakdown.map((item, idx) => (
+                            <div key={idx} className="bg-white p-2.5 rounded-lg border border-rose-100 flex items-center justify-between">
+                              <div>
+                                <div className="font-bold text-slate-900">{item.amount} via IMPS</div>
+                                <div className="text-[10px] font-mono text-slate-500">{item.utr} • {item.time}</div>
+                              </div>
+                              <span className="text-[11px] font-mono font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
+                                To: {item.to}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* STAGE 2: HOW THE CASE WAS FILED */}
+              {storyStage === 2 && (
+                <div className="space-y-6">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+                    <div>
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>STAGE 2: REPORTING & REGISTRATION</span>
+                      </div>
+                      <h4 className="text-lg font-bold text-slate-900 mt-2">
+                        {currentStory.stage2.title}
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {currentStory.stage2.subtitle} • {currentStory.stage2.timestamp}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setStoryStage(1)}
+                        className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition"
+                      >
+                        Back
+                      </button>
+                      <button
+                        onClick={() => setStoryStage(3)}
+                        className="inline-flex items-center space-x-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow transition"
+                      >
+                        <span>Proceed to Stage 3: How AI Reacted</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="lg:col-span-7 space-y-4">
+                      <div className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                        Filing Procedure & Police Station Intake
+                      </div>
+                      <div className="space-y-3">
+                        {currentStory.stage2.narrative.map((paragraph, i) => (
+                          <div key={i} className="flex items-start space-x-3 p-3.5 bg-slate-50 rounded-xl border border-slate-100 text-xs">
+                            <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-800 font-bold flex items-center justify-center shrink-0 text-[11px]">
+                              {i + 1}
+                            </span>
+                            <p className="text-slate-700 leading-relaxed">{paragraph}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Official Docket Card */}
+                    <div className="lg:col-span-5 space-y-4">
+                      <div className="bg-amber-50/60 p-5 rounded-2xl border border-amber-200 space-y-4 text-xs">
+                        <div className="flex items-center justify-between border-b border-amber-200 pb-2">
+                          <div className="flex items-center space-x-2 text-xs font-bold text-amber-900">
+                            <ShieldCheck className="w-4 h-4 text-amber-700" />
+                            <span>Official Judicial Registration</span>
+                          </div>
+                          <span className="text-[11px] font-mono font-bold text-amber-800 bg-amber-200/60 px-2 py-0.5 rounded">
+                            {currentStory.stage2.firNumber}
+                          </span>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div>
+                            <span className="text-slate-500 text-[11px]">Helpline Contacted:</span>
+                            <div className="font-bold text-slate-800">{currentStory.stage2.helpline}</div>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 text-[11px]">National NCRP Acknowledgement Token:</span>
+                            <div className="font-mono font-bold text-blue-700 bg-white p-2 rounded-lg border border-amber-200">
+                              {currentStory.stage2.acknowledgementNo}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <span className="text-slate-500 text-[11px] font-bold uppercase block mb-1">
+                            Official Material Evidence Lodged by Victim:
+                          </span>
+                          <div className="space-y-1.5">
+                            {currentStory.stage2.evidenceLogged.map((ev, idx) => (
+                              <div key={idx} className="flex items-center space-x-2 bg-white p-2 rounded-lg border border-slate-200 text-slate-700">
+                                <CheckCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                <span className="text-[11px]">{ev}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* STAGE 3: HOW FRAUDTRACE AI REACTED */}
+              {storyStage === 3 && (
+                <div className="space-y-6">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+                    <div>
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
+                        <Zap className="w-3.5 h-3.5" />
+                        <span>STAGE 3: THE GOLDEN HOUR ALGORITHM & REACTION</span>
+                      </div>
+                      <h4 className="text-lg font-bold text-slate-900 mt-2">
+                        {currentStory.stage3.title}
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {currentStory.stage3.subtitle} • {currentStory.stage3.timestamp}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setStoryStage(2)}
+                        className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition"
+                      >
+                        Back
+                      </button>
+                      <button
+                        onClick={() => setStoryStage(4)}
+                        className="inline-flex items-center space-x-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow transition"
+                      >
+                        <span>Proceed to Stage 4: Police Interception</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="lg:col-span-7 space-y-4">
+                      <div className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                        Algorithmic Triage & Multi-Hop Traversal
+                      </div>
+                      <div className="space-y-3">
+                        {currentStory.stage3.narrative.map((paragraph, i) => (
+                          <div key={i} className="flex items-start space-x-3 p-3.5 bg-blue-50/40 rounded-xl border border-blue-100 text-xs">
+                            <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shrink-0 text-[11px]">
+                              {i + 1}
+                            </span>
+                            <p className="text-slate-800 leading-relaxed">{paragraph}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* AI Triggers & Risk Score Gauge */}
+                    <div className="lg:col-span-5 space-y-4">
+                      <div className="bg-slate-900 text-white p-5 rounded-2xl shadow-lg border border-slate-700 space-y-4 text-xs">
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                          <div className="flex items-center space-x-2">
+                            <Sparkles className="w-4 h-4 text-amber-400" />
+                            <span className="font-bold text-white">FraudTrace AI Analytics Cockpit</span>
+                          </div>
+                          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
+                            {currentStory.stage3.detectionVelocity}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                          <div>
+                            <span className="text-slate-400 text-[11px]">Target Account Risk Tier:</span>
+                            <div className="text-xl font-black text-rose-400 mt-0.5">
+                              {currentStory.stage3.muleRiskScore}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-slate-400 text-[11px]">Beneficiary Target:</span>
+                            <div className="font-mono font-bold text-blue-300 text-sm">{currentStory.primaryMuleAccount}</div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <span className="text-slate-400 text-[11px] font-bold uppercase block">
+                            Real-Time Machine Learning Flags:
+                          </span>
+                          {currentStory.stage3.aiTriggers.map((trig, idx) => (
+                            <div key={idx} className="bg-slate-800/60 p-2.5 rounded-lg border border-slate-700/60 flex items-center justify-between">
+                              <div>
+                                <div className="text-slate-200 font-semibold">{trig.name}</div>
+                                <div className="text-[10px] text-slate-400 font-mono">{trig.value}</div>
+                              </div>
+                              <span className="text-[10px] font-bold text-rose-400 bg-rose-950/80 px-2 py-0.5 rounded border border-rose-800">
+                                {trig.status}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="pt-2">
+                          <button
+                            onClick={() => onSelectAccount(currentStory.primaryMuleAccount)}
+                            className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs text-center transition"
+                          >
+                            Open Live Network Graph for {currentStory.primaryMuleAccount}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* STAGE 4: POLICE INTERCEPTION & RECOVERY */}
+              {storyStage === 4 && (
+                <div className="space-y-6">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+                    <div>
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>STAGE 4: ENFORCEMENT & ASSET RECOVERY</span>
+                      </div>
+                      <h4 className="text-lg font-bold text-slate-900 mt-2">
+                        {currentStory.stage4.title}
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {currentStory.stage4.subtitle} • {currentStory.stage4.timestamp}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setStoryStage(3)}
+                        className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition"
+                      >
+                        Back
+                      </button>
+                      <button
+                        onClick={() => {
+                          setStoryStage(1);
+                        }}
+                        className="inline-flex items-center space-x-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow transition"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Replay Story from Start</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="lg:col-span-7 space-y-4">
+                      <div className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                        Rapid Debit Lien & Physical Raid Operations
+                      </div>
+                      <div className="space-y-3">
+                        {currentStory.stage4.narrative.map((paragraph, i) => (
+                          <div key={i} className="flex items-start space-x-3 p-3.5 bg-emerald-50/50 rounded-xl border border-emerald-100 text-xs">
+                            <span className="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center shrink-0 text-[11px]">
+                              {i + 1}
+                            </span>
+                            <p className="text-slate-800 leading-relaxed">{paragraph}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Enforcement Summary Card */}
+                    <div className="lg:col-span-5 space-y-4">
+                      <div className="bg-emerald-50/70 p-5 rounded-2xl border border-emerald-200 space-y-4 text-xs">
+                        <div className="flex items-center justify-between border-b border-emerald-200 pb-2">
+                          <span className="font-bold text-emerald-950 uppercase text-xs">Judicial & Seizure Memo</span>
+                          <span className="text-xs font-bold text-emerald-700 bg-emerald-200/60 px-2 py-0.5 rounded">
+                            {currentStory.stage4.recoveredAmount}
+                          </span>
+                        </div>
+
+                        <div>
+                          <span className="text-slate-500 text-[11px]">Arrested Operatives:</span>
+                          <div className="font-bold text-slate-900 text-sm mt-0.5">
+                            {currentStory.stage4.accusedArrested}
+                          </div>
+                        </div>
+
+                        <div>
+                          <span className="text-slate-500 text-[11px] font-bold uppercase block mb-1">
+                            Physical & Digital Assets Seized:
+                          </span>
+                          <div className="space-y-1.5">
+                            {currentStory.stage4.seizures.map((item, idx) => (
+                              <div key={idx} className="flex items-center space-x-2 bg-white p-2 rounded-lg border border-emerald-100 text-slate-800">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                <span className="text-[11px] font-medium">{item}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="pt-2 border-t border-emerald-200 text-[11px] text-emerald-800 font-semibold flex items-center gap-1.5">
+                          <CheckCheck className="w-4 h-4 text-emerald-600" />
+                          <span>Victim pension funds fully restored under Court Order u/s 457 CrPC/BNSS.</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SECTION 2: SOLVED CASE DOSSIERS LIST */}
+      {activeTabSection === 'cases' && (
         <>
           {/* Search & Category Filter Controls */}
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -335,11 +1113,17 @@ export const SolvedCasesView: React.FC<SolvedCasesViewProps> = ({
                         </h2>
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
-                          <div className="text-[11px] text-slate-400 uppercase font-semibold">Date Solved</div>
-                          <div className="text-xs font-semibold text-slate-700">{c.date_solved}</div>
-                        </div>
+                      <div className="flex items-center gap-2.5">
+                        <button
+                          onClick={() => {
+                            setActiveTabSection('storytelling');
+                            setStoryStage(1);
+                          }}
+                          className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold shadow-sm transition"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+                          <span>Story Mode</span>
+                        </button>
                         <button
                           onClick={() => setSelectedCaseModal(c)}
                           className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold shadow-sm transition"
@@ -503,8 +1287,10 @@ export const SolvedCasesView: React.FC<SolvedCasesViewProps> = ({
             </div>
           )}
         </>
-      ) : (
-        /* National & State Ecosystem Integration Hub Section */
+      )}
+
+      {/* SECTION 3: NATIONAL & STATE ECOSYSTEM INTEGRATION HUB */}
+      {activeTabSection === 'inter-agency' && (
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
@@ -717,40 +1503,6 @@ export const SolvedCasesView: React.FC<SolvedCasesViewProps> = ({
                 </div>
               </div>
             </div>
-
-            {/* Strategic Workflow: How We Stop These Frauds */}
-            <div className="mt-6 p-5 bg-slate-900 text-white rounded-xl space-y-4">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-400" />
-                <span>End-to-End Interception Protocol: From Citizen Complaint to Mule Ring Bust</span>
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
-                <div className="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700 space-y-1.5">
-                  <div className="font-bold text-amber-300">Stage 1: Golden Hour Trigger (0-15 Min)</div>
-                  <p className="text-slate-300 leading-relaxed text-[11px]">
-                    Citizen dials 1930 / logs on NCRP. Ticket ingested into FraudTrace AI. Transaction reference mapped to beneficiary bank account ACC-4321 within seconds.
-                  </p>
-                </div>
-                <div className="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700 space-y-1.5">
-                  <div className="font-bold text-blue-300">Stage 2: Graph Layering Traversal (15-20 Min)</div>
-                  <p className="text-slate-300 leading-relaxed text-[11px]">
-                    Platform traverses multi-hop transaction graph. Detects splitting across Layer 2 accounts. Telemetry from TAFCOP reveals 14 SIMs registered on suspect KYC.
-                  </p>
-                </div>
-                <div className="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700 space-y-1.5">
-                  <div className="font-bold text-emerald-300">Stage 3: Multi-Bank Rapid Lien (20-30 Min)</div>
-                  <p className="text-slate-300 leading-relaxed text-[11px]">
-                    Investigator generates Section 106 BNSS / 102 CrPC freeze notices via one click. Bank nodal officers place debit freezes before ATM cash withdrawal or crypto off-ramp.
-                  </p>
-                </div>
-                <div className="bg-slate-800/80 p-3.5 rounded-lg border border-slate-700 space-y-1.5">
-                  <div className="font-bold text-purple-300">Stage 4: Physical Raid & Judicial Record</div>
-                  <p className="text-slate-300 leading-relaxed text-[11px]">
-                    Cyber Crime Thana raids operator hideout based on CDR/IP geolocation. Seizure memo recorded, chargesheet filed in CCTNS, and solved case dossier archived.
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       )}
@@ -780,7 +1532,6 @@ export const SolvedCasesView: React.FC<SolvedCasesViewProps> = ({
 
             {/* Modal Body */}
             <div className="p-6 space-y-5 text-sm">
-              {/* Crime & Status Banner */}
               <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-blue-50/70 border border-blue-100 rounded-xl">
                 <div>
                   <span className="text-[11px] text-slate-500 font-bold uppercase">Crime Classification</span>
