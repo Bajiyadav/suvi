@@ -12,7 +12,8 @@ import {
   Database,
   Settings,
   HelpCircle,
-  Bot
+  Bot,
+  Award
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -28,6 +29,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab }) => {
     { id: 'network', label: 'Network Investigation', icon: Share2 },
     { id: 'complaints', label: 'Complaints & Incidents', icon: FileText },
     { id: 'entity-search', label: 'Entity Search', icon: Search },
+    { id: 'solved-cases', label: 'Solved Case Stories', icon: Award },
     { id: 'reports', label: 'Reports', icon: FileText },
     { id: 'watchlist', label: 'Watchlist', icon: Bookmark },
     { id: 'data-management', label: 'Data Management', icon: Database },

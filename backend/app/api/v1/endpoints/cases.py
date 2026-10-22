@@ -10,6 +10,7 @@ from app.core.security import get_current_investigator, InvestigatorUser, enforc
 from app.models.account import Account
 from app.models.case import InvestigationCase, CaseStatus, WatchlistEntry, InvestigationNote
 from app.models.audit import AuditLog
+from app.models.solved_case import SolvedCase
 from app.schemas.case import (
     CaseCreate,
     CaseUpdate,
@@ -22,6 +23,7 @@ from app.schemas.case import (
     ActionRequestResponse,
     AuditLogResponse,
 )
+from app.schemas.solved_case import SolvedCaseCreate, SolvedCaseResponse
 
 router = APIRouter()
 
@@ -408,4 +410,178 @@ def ingest_dataset_endpoint(
         return summary
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to ingest dataset: {str(e)}")
+
+
+def _seed_initial_solved_cases_if_empty(db: Session):
+    """Seed initial realistic solved case stories from cyber cells if empty."""
+    if db.query(SolvedCase).count() > 0:
+        return
+
+    seed_cases = [
+        SolvedCase(
+            case_id="SOLVED-BIHAR-2026-001",
+            fir_number="FIR No. 89/2026 u/s 420/419/120B IPC & 66C/66D IT Act",
+            police_station="Cyber Crime Police Station (CCSU), Patna",
+            district="Patna",
+            state="Bihar",
+            investigating_officer="Inspector Vikramaditya Singh, CCSU Bihar Police",
+            crime_category="Electricity Bill Disconnection APK Phishing",
+            total_fraud_amount=4850000.00,
+            recovered_amount=3920000.00,
+            date_solved="2026-08-14",
+            case_status="Convicted (Chargesheet No. 42/2026)",
+            accused_name="Manoj Kumar Mandal @ Chhotu",
+            father_name="Shri Rajendra Mandal",
+            age=28,
+            address="Vill. Karmatanr, PO Subhash Gram, PS Karmatanr, Dist. Jamtara (Arrested in Patna hideout)",
+            mobile_number="+91-98351-44321",
+            alternate_mobile="+91-94720-88192",
+            id_proof="Aadhaar: XXXX-XXXX-9142 (Forged student KYC)",
+            bank_name="State Bank of India",
+            account_number="ACC-4321",
+            ifsc_code="SBIN0000152",
+            branch_name="Patna Main Branch",
+            bank_registered_mobile="+91-98351-44321",
+            upi_id="suvimule4321@oksbi",
+            layering_speed_minutes=3,
+            layering_route="Layer 1: Entry beneficiary ACC-4321 receives Rs 15.4L from victim -> Layer 2: Fast-split within 180 seconds across 6 accounts (HDFC, PNB, Canara) -> Layer 3: Rs 8.5L transferred to crypto OTC wallet & Rs 6.9L cash withdrawal at Nepal border ATM (Raxaul)",
+            modus_operandi="Victim received SMS: 'Dear Consumer, your electricity power will be disconnected tonight at 9:30 PM due to unpaid bill. Immediately update via Suvidha Power APK.' Malicious APK intercepted OTP and initiated automated IMPS transfers.",
+            breakthrough_trail="NCRP 1930 alert triggered automated golden-hour freeze request. FraudTrace AI pass-through layering detection identified ACC-4321 within 90 seconds. Police liaison blocked Rs 39.2 Lakhs across Layer 1 and Layer 2 before off-ramping.",
+            seized_items="18 Android phones, 64 Pre-activated West Bengal & Assam SIM cards, 14 ATM debit cards, 1 Micro-ATM device, Rs 7,80,000 cash.",
+            national_portal_ref="NCRP-ACK-2026-BIH-09142 | CCTNS-FIR-89-2026-PATNA"
+        ),
+        SolvedCase(
+            case_id="SOLVED-BIHAR-2026-002",
+            fir_number="FIR No. 142/2026 u/s 318(4)/316(2)/61(2) BNS & 66D IT Act",
+            police_station="Cyber Thana Gaya",
+            district="Gaya",
+            state="Bihar",
+            investigating_officer="DSP Priya Ranjan, Cyber Cell Gaya",
+            crime_category="Telegram Part-Time Task & Crypto Investment Scam",
+            total_fraud_amount=8200000.00,
+            recovered_amount=6450000.00,
+            date_solved="2026-09-02",
+            case_status="Charge-sheeted (Judicial Custody)",
+            accused_name="Suraj Prakash Verma",
+            father_name="Late Birendra Verma",
+            age=31,
+            address="Mohalla Civil Lines, Near Tower Chowk, PS Rampur, Dist. Gaya, Bihar - 823001",
+            mobile_number="+91-70041-99876",
+            alternate_mobile="+91-82103-55412",
+            id_proof="PAN: BPWPV****K | Aadhaar: XXXX-XXXX-3819",
+            bank_name="HDFC Bank",
+            account_number="ACC-8765",
+            ifsc_code="HDFC0001082",
+            branch_name="Gaya Branch",
+            bank_registered_mobile="+91-70041-99876",
+            upi_id="hdfcmule8765@okhdfcbank",
+            layering_speed_minutes=5,
+            layering_route="Layer 1: Victim deposited Rs 25,000 to Rs 5,00,000 in fake task scheme into ACC-8765 -> Layer 2: Aggregated into 3 current business accounts -> Layer 3: Converted to USDT on P2P exchanges.",
+            modus_operandi="Victims added to Telegram channels promising Rs 3,000 daily for rating Google maps locations and YouTube videos. Initial small payouts made to build trust, followed by VIP investment requests totaling Rs 82 Lakhs.",
+            breakthrough_trail="Correlation of 5 citizen complaints on 1930 portal mapped to same UPI VPA. Rapid debit freeze order issued under Section 106 BNSS saved Rs 64.5 Lakhs in intermediary merchant accounts.",
+            seized_items="3 Laptops, 8 Passbooks of shell enterprises, 2 POS machines, 22 Debit cards.",
+            national_portal_ref="NCRP-ACK-2026-BIH-11029 | CCTNS-GAYA-142-2026"
+        ),
+        SolvedCase(
+            case_id="SOLVED-BIHAR-2026-003",
+            fir_number="FIR No. 67/2026 u/s 420/384/120B IPC & 66E/67A IT Act",
+            police_station="Cyber Crime Thana, Muzaffarpur",
+            district="Muzaffarpur",
+            state="Bihar",
+            investigating_officer="Sub-Inspector Rajeshwar Prasad, Cyber Investigation Team",
+            crime_category="Instant Loan App Blackmail & Mule Syndicate",
+            total_fraud_amount=3100000.00,
+            recovered_amount=2890000.00,
+            date_solved="2026-10-05",
+            case_status="Under Trial (Special Cyber Court)",
+            accused_name="Amit Kumar Sahani",
+            father_name="Shri Devanand Sahani",
+            age=24,
+            address="Vill. Madhuban, PS Kanti, Dist. Muzaffarpur, Bihar - 843109",
+            mobile_number="+91-91234-77651",
+            alternate_mobile="+91-99342-11098",
+            id_proof="Voter ID: BR/08/042/190821 | Aadhaar: XXXX-XXXX-7721",
+            bank_name="ICICI Bank",
+            account_number="ACC-1122",
+            ifsc_code="ICIC0000624",
+            branch_name="Muzaffarpur Club Road Branch",
+            bank_registered_mobile="+91-91234-77651",
+            upi_id="icicimule1122@okicici",
+            layering_speed_minutes=4,
+            layering_route="Layer 1: Extortion payments deposited into college student mule accounts -> Layer 2: Fast UPI transfers to aggregator account ACC-1122 -> Layer 3: Instant cash withdrawals via ATM networks across North Bihar.",
+            modus_operandi="Predatory loan apps (CashSpeed, RupeeFast) harvested victim phone contacts and photos, followed by morphing and blackmail messages demanding 300% interest.",
+            breakthrough_trail="DoT TAFCOP telecom audit revealed 14 SIM cards issued against one forged photo. Bank KYC review exposed mule commission scheme offering Rs 2,000/week to college students.",
+            seized_items="14 SIM cards, 6 Smartphones, 9 Debit Cards, Rs 3,40,000 liquid cash.",
+            national_portal_ref="NCRP-ACK-2026-BIH-04821 | CCTNS-MUZ-67-2026"
+        )
+    ]
+    for sc in seed_cases:
+        db.add(sc)
+    db.commit()
+
+
+@router.get("/solved-cases", response_model=List[SolvedCaseResponse])
+def list_solved_cases(
+    category: Optional[str] = Query(None, description="Filter by crime category"),
+    search: Optional[str] = Query(None, description="Search by accused name, mobile, bank account, or FIR"),
+    db: Session = Depends(get_db)
+):
+    """Retrieves all official solved police case stories and convicted/charge-sheeted mule dossiers."""
+    _seed_initial_solved_cases_if_empty(db)
+    query = db.query(SolvedCase)
+    if category:
+        query = query.filter(SolvedCase.crime_category == category)
+    if search:
+        search_filter = f"%{search}%"
+        query = query.filter(
+            (SolvedCase.accused_name.ilike(search_filter)) |
+            (SolvedCase.account_number.ilike(search_filter)) |
+            (SolvedCase.mobile_number.ilike(search_filter)) |
+            (SolvedCase.fir_number.ilike(search_filter)) |
+            (SolvedCase.police_station.ilike(search_filter))
+        )
+    return query.order_by(SolvedCase.created_at.desc()).all()
+
+
+@router.post("/solved-cases", response_model=SolvedCaseResponse, status_code=status.HTTP_201_CREATED)
+def create_solved_case(
+    payload: SolvedCaseCreate,
+    db: Session = Depends(get_db),
+    current_user: InvestigatorUser = Depends(get_current_investigator)
+):
+    """Enables law enforcement officers to enter a new solved case dossier into the judicial and intelligence repository."""
+    case_id = f"SOLVED-{payload.state.upper()[:5]}-{datetime.datetime.now().strftime('%Y')}-{uuid.uuid4().hex[:6].upper()}"
+    new_case = SolvedCase(
+        case_id=case_id,
+        **payload.dict()
+    )
+    db.add(new_case)
+
+    # Log audit entry
+    now_utc = datetime.datetime.now(datetime.timezone.utc)
+    audit = AuditLog(
+        log_id=f"AUD-{uuid.uuid4().hex[:12].upper()}",
+        timestamp=now_utc,
+        action="CREATE_SOLVED_CASE",
+        actor=current_user.name,
+        target_entity=case_id,
+        details=f"Logged solved case {payload.fir_number} for accused {payload.accused_name} (Recovered: Rs {payload.recovered_amount:,.2f})"
+    )
+    db.add(audit)
+    db.commit()
+    db.refresh(new_case)
+    return new_case
+
+
+@router.get("/solved-cases/{case_id}", response_model=SolvedCaseResponse)
+def get_solved_case(
+    case_id: str,
+    db: Session = Depends(get_db)
+):
+    """Fetch complete details of a specific solved case story."""
+    c = db.query(SolvedCase).filter(SolvedCase.case_id == case_id).first()
+    if not c:
+        raise HTTPException(status_code=404, detail="Solved case not found")
+    return c
+
 

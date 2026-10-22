@@ -23,6 +23,7 @@ import { ComplaintsView } from '@/features/complaints/ComplaintsView';
 import { EntitySearchView } from '@/features/investigations/EntitySearchView';
 import { ReportsView } from '@/features/reports/ReportsView';
 import { WatchlistView } from '@/features/investigations/WatchlistView';
+import { SolvedCasesView } from '@/features/investigations/SolvedCasesView';
 import { DataManagementView } from '@/features/overview/DataManagementView';
 import { SettingsView } from '@/features/overview/SettingsView';
 import { HelpDocumentationView } from '@/features/overview/HelpDocumentationView';
@@ -350,6 +351,18 @@ export default function DashboardPage() {
               currentAccountId={selectedAccountId}
               onOpenDossier={handleOpenDossierForAccount}
               onSelectAccount={handleSelectAccount}
+            />
+          )}
+
+          {/* 7.5. Solved Case Stories & Mule Rings */}
+          {activeTab === 'solved-cases' && (
+            <SolvedCasesView
+              onSelectAccount={(accId) => {
+                handleSelectAccount(accId);
+                setActiveTab('transactions');
+              }}
+              onOpenDossier={handleOpenDossierForAccount}
+              onNavigateToTab={(tab) => setActiveTab(tab)}
             />
           )}
 

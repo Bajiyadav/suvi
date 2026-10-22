@@ -3,6 +3,7 @@ from app.models.transaction import Transaction, PaymentChannel, TransactionStatu
 from app.models.complaint import CybercrimeComplaint, ComplaintAccountLink, ComplaintType, ComplaintStatus
 from app.models.case import InvestigationCase, CaseStatus, WatchlistEntry, InvestigationNote
 from app.models.audit import AuditLog
+from app.models.solved_case import SolvedCase
 
 __all__ = [
     "Account",
@@ -23,5 +24,7 @@ __all__ = [
     "WatchlistEntry",
     "InvestigationNote",
     "AuditLog",
+    "SolvedCase",
 ]
+
 

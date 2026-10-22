@@ -231,3 +231,44 @@ export interface AuditLogEntry {
   details?: Record<string, any> | string;
 }
 
+export interface SolvedCase {
+  case_id: string;
+  fir_number: string;
+  police_station: string;
+  district: string;
+  state: string;
+  investigating_officer: string;
+  crime_category: string;
+  total_fraud_amount: number;
+  recovered_amount: number;
+  date_solved: string;
+  case_status: string;
+
+  // Accused / Mule Operative Details
+  accused_name: string;
+  father_name?: string;
+  age?: number;
+  address: string;
+  mobile_number: string;
+  alternate_mobile?: string;
+  id_proof?: string;
+
+  // Banking & Fast-Layering Profile
+  bank_name: string;
+  account_number: string;
+  ifsc_code?: string;
+  branch_name?: string;
+  bank_registered_mobile: string;
+  upi_id?: string;
+  layering_speed_minutes: number;
+  layering_route: string;
+
+  // Investigation & Seizure Memo
+  modus_operandi: string;
+  breakthrough_trail: string;
+  seized_items?: string;
+  national_portal_ref?: string;
+  created_at?: string;
+}
+
+
