@@ -1,13 +1,22 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.core.database import Base, engine
+from app.core.database import Base, engine, SessionLocal
+from app.models.account import Account
 from app.api.v1.api import api_router
 from app.seed.generate_fixtures import seed_database
 import os
 
 # Initialize database schema on startup if database file not yet created
 Base.metadata.create_all(bind=engine)
+
+# Auto-seed deterministic synthetic fixtures on first launch if empty
+_init_db = SessionLocal()
+try:
+    if _init_db.query(Account).count() == 0:
+        seed_database()
+finally:
+    _init_db.close()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

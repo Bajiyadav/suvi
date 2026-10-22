@@ -217,12 +217,17 @@ export interface FullTransaction {
 }
 
 export interface AuditLogEntry {
-  audit_id: string;
+  audit_id?: string;
+  log_id?: string;
   timestamp: string;
-  action_type: string;
-  resource_type: string;
+  action_type?: string;
+  action?: string;
+  resource_type?: string;
   resource_id?: string;
+  target_entity?: string;
+  actor?: string;
   investigator_id?: string;
-  status: string;
-  details?: Record<string, any>;
+  status?: string;
+  details?: Record<string, any> | string;
 }
+

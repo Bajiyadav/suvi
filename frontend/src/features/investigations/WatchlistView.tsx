@@ -315,13 +315,23 @@ export const WatchlistView: React.FC<WatchlistViewProps> = ({
                   </td>
                 </tr>
               ) : (
-                auditLogs.map((log) => {
-                  const isActionReq = log.action_type.startsWith('REQUEST_');
-                  const isExport = log.action_type.includes('EXPORT');
-                  const isWatchlist = log.action_type.includes('WATCHLIST');
+                auditLogs.map((log, index) => {
+                  const actionType = (log.action || log.action_type || 'SYSTEM_ACTION').toString();
+                  const isActionReq = actionType.startsWith('REQUEST_');
+                  const isExport = actionType.includes('EXPORT');
+                  const isWatchlist = actionType.includes('WATCHLIST');
+                  const logId = log.log_id || log.audit_id || `log-${index}`;
+                  const actor = log.actor || log.investigator_id || 'SYSTEM_AUTH';
+                  const target = log.target_entity || log.resource_id || 'N/A';
+                  let detailsText = 'Action completed';
+                  if (typeof log.details === 'string') {
+                    detailsText = log.details;
+                  } else if (log.details && typeof log.details === 'object') {
+                    detailsText = log.details.details || JSON.stringify(log.details);
+                  }
 
                   return (
-                    <tr key={log.audit_id} className="hover:bg-slate-50/60 transition">
+                    <tr key={logId} className="hover:bg-slate-50/60 transition">
                       <td className="py-2.5 px-4 text-slate-500 text-[11px] whitespace-nowrap">
                         {new Date(log.timestamp).toLocaleString('en-IN', {
                           dateStyle: 'short',
@@ -340,20 +350,20 @@ export const WatchlistView: React.FC<WatchlistViewProps> = ({
                               : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                           }`}
                         >
-                          {log.action_type}
+                          {actionType}
                         </span>
                       </td>
                       <td className="py-2.5 px-4 font-sans text-slate-700 font-medium">
-                        {log.investigator_id || 'SYSTEM_AUTH'}
+                        {actor}
                       </td>
                       <td className="py-2.5 px-4 text-blue-600 font-semibold">
-                        {log.resource_id || 'N/A'}
+                        {target}
                       </td>
-                      <td className="py-2.5 px-4 font-sans text-slate-600 max-w-sm truncate" title={log.details ? JSON.stringify(log.details) : ''}>
-                        {log.details?.details || (typeof log.details === 'string' ? log.details : JSON.stringify(log.details) || 'Action completed')}
+                      <td className="py-2.5 px-4 font-sans text-slate-600 max-w-sm truncate" title={detailsText}>
+                        {detailsText}
                       </td>
                       <td className="py-2.5 px-4 text-right text-slate-400 text-[10px]">
-                        {log.audit_id}
+                        {logId}
                       </td>
                     </tr>
                   );
