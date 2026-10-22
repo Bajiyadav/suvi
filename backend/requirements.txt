@@ -12,3 +12,4 @@ pytest-asyncio>=0.23.5,<1.0.0
 pytest-cov>=4.1.0,<6.0.0
 reportlab>=4.1.0,<5.0.0
 python-dateutil>=2.9.0
+openpyxl>=3.1.2

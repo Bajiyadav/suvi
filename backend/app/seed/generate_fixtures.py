@@ -28,6 +28,8 @@ def seed_database():
                 "account_category": AccountCategory.MULE_SUSPECT.value,
                 "registered_mobile_masked": "+91 98765 43210",
                 "upi_vpa": "ramesh.k4321@ubharat",
+                "device_id": "DEV-ANDROID-X902",
+                "ip_address": "49.207.180.22",
                 "opened_date": datetime.datetime(2025, 11, 10),
                 "current_balance": 46700.0,
                 "status": AccountStatus.UNDER_MONITORING.value,
@@ -107,6 +109,8 @@ def seed_database():
                 "bank_name": "State Bank of Bharat",
                 "account_holder_name": "Anil G. (Synthetic)",
                 "registered_mobile_masked": "+91 98765 11110",
+                "device_id": "DEV-ANDROID-X902",
+                "ip_address": "49.207.180.22",
                 "risk_score": 68,
                 "risk_tier": RiskTier.MEDIUM.value,
                 "key_indicators": "Layer 2 mule intermediary"
@@ -137,6 +141,8 @@ def seed_database():
                 "bank_name": "Axis Synthetic",
                 "account_holder_name": "Suresh B. (Synthetic)",
                 "registered_mobile_masked": "+91 98765 44440",
+                "device_id": "DEV-ANDROID-X902",
+                "ip_address": "49.207.180.22",
                 "risk_score": 85,
                 "risk_tier": RiskTier.HIGH.value,
                 "key_indicators": "High velocity cashout staging"
@@ -230,6 +236,8 @@ def seed_database():
                 account_category=acc.get("account_category", AccountCategory.SALARY.value),
                 registered_mobile_masked=acc["registered_mobile_masked"],
                 upi_vpa=acc.get("upi_vpa", f"user.{acc['account_id'].lower()}@bank"),
+                device_id=acc.get("device_id", f"DEV-{acc['account_id']}"),
+                ip_address=acc.get("ip_address", "103.21.244.15"),
                 opened_date=acc.get("opened_date", datetime.datetime(2025, 6, 1)),
                 current_balance=acc.get("current_balance", 25000.0),
                 status=acc.get("status", AccountStatus.ACTIVE.value),
@@ -259,6 +267,17 @@ def seed_database():
             ("TXN-010", "ACC-4321", "ACC-3333", 62000.0, base_time + datetime.timedelta(hours=6), PaymentChannel.UPI.value, "Disbursement", PatternTag.LAYERING.value),
             ("TXN-011", "ACC-4321", "ACC-6666", 58000.0, base_time + datetime.timedelta(hours=7), PaymentChannel.UPI.value, "Layer 2 transfer", PatternTag.NORMAL.value),
             ("TXN-012", "ACC-4321", "ACC-MERCHANT-TECHKART", 15000.0, base_time + datetime.timedelta(hours=8), PaymentChannel.POS.value, "Online purchase card/UPI", PatternTag.NORMAL.value),
+            # Additional mule syndicate transactions for ACC-8765 and ACC-1122
+            ("TXN-013", "ACC-7788", "ACC-8765", 48000.0, base_time + datetime.timedelta(hours=1), PaymentChannel.UPI.value, "Phishing victim credit", PatternTag.NORMAL.value),
+            ("TXN-014", "ACC-8765", "ACC-1122", 47500.0, base_time + datetime.timedelta(hours=1, minutes=4), PaymentChannel.IMPS.value, "Rapid mule pass-through", PatternTag.RAPID_TRANSFER.value),
+            ("TXN-015", "ACC-6677", "ACC-8765", 49000.0, base_time + datetime.timedelta(hours=2), PaymentChannel.UPI.value, "Victim deposit", PatternTag.NORMAL.value),
+            ("TXN-016", "ACC-8765", "ACC-1122", 48500.0, base_time + datetime.timedelta(hours=2, minutes=3), PaymentChannel.IMPS.value, "Rapid forwarding", PatternTag.RAPID_TRANSFER.value),
+            ("TXN-017", "ACC-8765", "ACC-4444", 45000.0, base_time + datetime.timedelta(hours=3), PaymentChannel.UPI.value, "Layering transfer", PatternTag.LAYERING.value),
+            # Circular return flow loop: ACC-4321 -> ACC-1111 -> ACC-3333 -> ACC-4321
+            ("TXN-018", "ACC-1111", "ACC-3333", 30000.0, base_time + datetime.timedelta(hours=4), PaymentChannel.UPI.value, "Intermediary relay", PatternTag.LAYERING.value),
+            ("TXN-019", "ACC-3333", "ACC-4321", 28000.0, base_time + datetime.timedelta(hours=5), PaymentChannel.IMPS.value, "Circular return hop", PatternTag.ROUND_TRIP.value),
+            # Terminal Cashout Hop: ACC-4444 -> Merchant / ATM
+            ("TXN-020", "ACC-4444", "ACC-MERCHANT-TECHKART", 40000.0, base_time + datetime.timedelta(hours=6), PaymentChannel.POS.value, "Cashout e-commerce POS", PatternTag.NORMAL.value),
         ]
 
         # Additional synthetic bulk transactions to reach 42 incoming / 38 layering / 36 outflows
