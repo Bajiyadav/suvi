@@ -1,7 +1,7 @@
 from app.models.account import Account, AccountType, AccountCategory, AccountStatus, RiskTier
 from app.models.transaction import Transaction, PaymentChannel, TransactionStatus, PatternTag
 from app.models.complaint import CybercrimeComplaint, ComplaintAccountLink, ComplaintType, ComplaintStatus
-from app.models.case import InvestigationCase, CaseStatus
+from app.models.case import InvestigationCase, CaseStatus, WatchlistEntry, InvestigationNote
 from app.models.audit import AuditLog
 
 __all__ = [
@@ -20,5 +20,8 @@ __all__ = [
     "ComplaintStatus",
     "InvestigationCase",
     "CaseStatus",
+    "WatchlistEntry",
+    "InvestigationNote",
     "AuditLog",
 ]
+

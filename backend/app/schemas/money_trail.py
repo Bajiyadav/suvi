@@ -27,4 +27,13 @@ class MoneyTrailHop(BaseModel):
     amount_formatted: str
     timestamp: str
     channel: str
-    role: str # SOURCE_VICTIM, MULE_HUB, SECONDARY_MULE, CASHOUT_TERMINAL
+    role: str # SOURCE_VICTIM, MULE_LAYER_1, MULE_LAYER_2, CASHOUT_TERMINAL, CIRCULAR_RETURN
+    transaction_id: Optional[str] = None
+    is_cycle: Optional[bool] = False
+
+class MoneyTrailSequence(BaseModel):
+    root_account_id: str
+    total_hops_traced: int
+    cycle_detected: bool
+    total_volume_traced: float
+    hops: List[MoneyTrailHop]

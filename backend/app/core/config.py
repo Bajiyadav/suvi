@@ -22,8 +22,16 @@ class Settings(BaseSettings):
     WEIGHT_BASELINE_DEVIATION: int = 15
     WEIGHT_STRUCTURING: int = 10
     WEIGHT_COMPLAINTS: int = 15
+    HIGH_RISK_THRESHOLD: int = 70
 
     SYNTHETIC_DATA_FLAG: bool = True
+
+    # Security & Authentication Settings
+    AUTH_ENABLED: bool = False
+    API_KEY: str = "ft-investigator-secret-key-2026"
+    JWT_SECRET: str = "cyber-hackathon-2026-fraudtrace-ai-jwt-secret"
+    RESTRICT_AUTOMATED_ACTIONS: bool = True
+
 
     @property
     def cors_origins(self) -> List[str]:

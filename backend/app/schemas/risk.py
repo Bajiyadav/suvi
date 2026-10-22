@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 class ContributingFactor(BaseModel):
     indicator_id: str
@@ -9,6 +9,7 @@ class ContributingFactor(BaseModel):
     percentage_impact: float
     summary: str
     evidence_references: List[str]
+    evidence_rows: Optional[List[Dict[str, Any]]] = None
 
 class RiskExplanationResponse(BaseModel):
     account_id: str

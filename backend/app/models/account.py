@@ -41,6 +41,8 @@ class Account(Base):
     account_category = Column(String(32), default=AccountCategory.SALARY.value)
     registered_mobile_masked = Column(String(32), nullable=False)
     upi_vpa = Column(String(128), nullable=True, index=True)
+    device_id = Column(String(64), nullable=True, index=True)
+    ip_address = Column(String(64), nullable=True)
     opened_date = Column(DateTime, default=datetime.datetime.utcnow)
     current_balance = Column(Float, default=0.0)
     status = Column(String(32), default=AccountStatus.ACTIVE.value)

@@ -12,6 +12,8 @@ class TransactionBase(BaseModel):
     narrative: Optional[str] = None
     status: str
     pattern_tag: Optional[str] = None
+    device_id: Optional[str] = None
+    ip_address: Optional[str] = None
     location: Optional[str] = None
 
 class TransactionResponse(TransactionBase):

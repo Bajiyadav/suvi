@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, Query, Response, HTTPException
 from sqlalchemy.orm import Session
 from typing import Dict, Any
 from app.core.database import get_db
@@ -14,13 +14,16 @@ def export_dossier_json(
     case_id: str = Query("CASE-2026-0042"),
     db: Session = Depends(get_db)
 ) -> Dict[str, Any]:
-    """Generates structured JSON evidence dossier with audit logging."""
+    """Generates structured JSON evidence dossier with audit logging.
+    Raises HTTP 404 if the requested account does not exist.
+    """
     service = ReportGenerationService(db)
     dossier = service.generate_dossier_json(account_id, case_id)
 
-    # Log audit event
+    # Log audit event only after successful generation
+    now_utc = datetime.datetime.now(datetime.timezone.utc)
     audit = AuditLog(
-        log_id=f"AUD-{datetime.datetime.utcnow().timestamp()}",
+        log_id=f"AUD-{now_utc.timestamp()}",
         action="EXPORT_DOSSIER_JSON",
         target_entity=account_id,
         details=f"Exported JSON dossier for case {case_id}"
@@ -36,13 +39,16 @@ def download_dossier_pdf(
     case_id: str = Query("CASE-2026-0042"),
     db: Session = Depends(get_db)
 ):
-    """Generates downloadable PDF Evidence Report."""
+    """Generates downloadable PDF Evidence Report.
+    Raises HTTP 404 if the requested account does not exist.
+    """
     service = ReportGenerationService(db)
     pdf_bytes = service.generate_dossier_pdf(account_id, case_id)
 
-    # Log audit event
+    # Log audit event only after successful generation
+    now_utc = datetime.datetime.now(datetime.timezone.utc)
     audit = AuditLog(
-        log_id=f"AUD-{datetime.datetime.utcnow().timestamp()}",
+        log_id=f"AUD-{now_utc.timestamp()}",
         action="EXPORT_DOSSIER_PDF",
         target_entity=account_id,
         details=f"Downloaded PDF dossier for case {case_id}"

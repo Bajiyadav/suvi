@@ -1,6 +1,7 @@
 import io
 import datetime
 from typing import Dict, Any
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.models.account import Account
 from app.services.risk_scoring import RiskScoringService
@@ -22,9 +23,15 @@ class ReportGenerationService:
         self.complaint_service = ComplaintCorrelationService(db)
 
     def generate_dossier_json(self, account_id: str, case_id: str = "CASE-2026-0042") -> Dict[str, Any]:
-        """Generates comprehensive structured JSON evidence dossier."""
+        """Generates comprehensive structured JSON evidence dossier.
+        Returns 404 error if account does not exist without fabricating evidence.
+        """
         account = self.db.query(Account).filter(Account.account_id == account_id).first()
-        acc_masked = account.account_number_masked if account else account_id
+        if not account:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Account '{account_id}' not found. Cannot generate investigation dossier for nonexistent account."
+            )
 
         risk_data = self.risk_service.calculate_explainable_risk(account_id)
         flow_data = self.flow_service.get_flow_analysis(account_id)
@@ -32,31 +39,66 @@ class ReportGenerationService:
         complaint_data = self.complaint_service.get_complaints_for_account(account_id)
         entities = self.complaint_service.get_associated_entities(account_id)
 
+        # Dynamically formulate investigative conclusions strictly based on evaluated evidence
+        score = risk_data.get("risk_score", 0)
+        complaints_count = len(complaint_data)
+        incoming_total = flow_data.get("incoming_total", 0.0)
+        layering_total = flow_data.get("layering_total", 0.0)
+        pass_through_pct = (layering_total / incoming_total * 100.0) if incoming_total > 0 else 0.0
+
+        if score >= 80:
+            recommended_action = "PRIORITISE FOR INVESTIGATOR REVIEW"
+            rationale = (
+                f"High-priority suspicion: Evaluated risk score {score}/100 with {complaints_count} correlated "
+                f"complaint(s) and {pass_through_pct:.1f}% pass-through layering velocity. Prioritise for investigator review; "
+                f"verify supporting evidence before considering further action."
+            )
+        elif score >= 60:
+            recommended_action = "EXPEDITE INVESTIGATIVE VERIFICATION"
+            rationale = (
+                f"Elevated mule suspicion: Evaluated risk score {score}/100 with {complaints_count} correlated "
+                f"complaint(s). Prioritise for analyst audit; verify source of funds and beneficial ownership before considering action."
+            )
+        elif score >= 35:
+            recommended_action = "STANDARD INVESTIGATIVE REVIEW"
+            rationale = (
+                f"Moderate transactional deviation: Evaluated risk score {score}/100. "
+                f"Routine compliance verification and KYC re-validation advised."
+            )
+        else:
+            recommended_action = "NO ACTION REQUIRED // BENIGN BEHAVIOUR"
+            rationale = (
+                f"Low evaluated risk profile: Score {score}/100. "
+                f"Transactional patterns consistent with normal activity; no indicators of illicit fund dispersal."
+            )
+
+        now_utc = datetime.datetime.now(datetime.timezone.utc)
+
         return {
             "dossier_metadata": {
-                "report_id": f"REP-{datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
+                "report_id": f"REP-{now_utc.strftime('%Y%m%d%H%M%S')}",
                 "case_reference": case_id,
-                "generation_timestamp": datetime.datetime.utcnow().isoformat(),
+                "generation_timestamp": now_utc.isoformat(),
                 "generating_agency": "Cyber Crime Unit / Financial Intelligence Platform",
                 "classification": "CONFIDENTIAL // LAW ENFORCEMENT INVESTIGATION ONLY",
                 "synthetic_notice": "STATUTORY NOTICE: Generated synthetically for Cyber Hackathon 2026 PS-01 evaluation. Does not represent actual criminal records."
             },
             "target_account": {
-                "account_id": account_id,
-                "account_number_masked": acc_masked,
-                "bank_name": account.bank_name if account else "State Bank of Bharat",
-                "account_holder_name": account.account_holder_name if account else "Ramesh K. (Synthetic)",
-                "registered_mobile": account.registered_mobile_masked if account else "+91 98765 43210",
-                "status": account.status if account else "UNDER_MONITORING"
+                "account_id": account.account_id,
+                "account_number_masked": account.account_number_masked,
+                "bank_name": account.bank_name,
+                "account_holder_name": account.account_holder_name,
+                "registered_mobile": account.registered_mobile_masked or "NOT_RECORDED",
+                "status": account.status
             },
             "risk_assessment": risk_data,
             "transaction_flow_analysis": flow_data,
-            "money_trail_sequence": trail_data,
+            "money_trail_sequence": self.trail_service.get_money_trail_sequence(account_id),
             "linked_cybercrime_complaints": complaint_data,
             "associated_entities": entities,
             "investigative_conclusions": {
-                "recommended_action": "INITIATE IMMEDIATE LIEN / TEMPORARY DEBIT FREEZE",
-                "rationale": "High-confidence mule hub: 97.2% funds forwarded within minutes of victim deposit; 3 verified NCRP complaints."
+                "recommended_action": recommended_action,
+                "rationale": rationale
             }
         }
 
@@ -104,17 +146,21 @@ class ReportGenerationService:
             spaceBefore=14
         )
 
+        now_utc = datetime.datetime.now(datetime.timezone.utc)
         elements = []
         elements.append(Paragraph("FRAUDTRACE AI — FINANCIAL CRIME INVESTIGATION DOSSIER", title_style))
-        elements.append(Paragraph(f"Case Ref: {case_id} | Target Account: {data['target_account']['account_number_masked']} | Generated: {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}", subtitle_style))
+        elements.append(Paragraph(f"Case Ref: {case_id} | Target Account: {data['target_account']['account_number_masked']} | Generated: {now_utc.strftime('%Y-%m-%d %H:%M UTC')}", subtitle_style))
         elements.append(Spacer(1, 8))
 
         # Risk Score Banner Table
         score_val = str(data['risk_assessment']['risk_score'])
-        tier_val = data['risk_assessment']['risk_tier']
+        tier_val = str(data['risk_assessment'].get('risk_tier', 'LOW')).upper()
+        confidence_val = f"{int(data['risk_assessment'].get('confidence', 0.9) * 100)}%"
+        action_val = data['investigative_conclusions']['recommended_action'].split('/')[0].strip()
+
         score_table_data = [
             ["EVALUATED RISK SCORE", "RISK PRIORITY TIER", "CONFIDENCE LEVEL", "ACTION STATUS"],
-            [f"{score_val} / 100", tier_val.upper(), "96%", "URGENT REVIEW"]
+            [f"{score_val} / 100", tier_val, confidence_val, action_val]
         ]
         t = Table(score_table_data, colWidths=[130, 130, 130, 130])
         t.setStyle(TableStyle([

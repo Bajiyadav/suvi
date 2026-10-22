@@ -12,8 +12,7 @@ router = APIRouter()
 def list_complaints(limit: int = 50, db: Session = Depends(get_db)):
     """Lists registered cybercrime complaints with linked suspect counts."""
     service = ComplaintCorrelationService(db)
-    # We can fetch for default or all
-    return service.get_complaints_for_account("ACC-4321")
+    return service.list_all_complaints(limit=limit)
 
 @router.get("/account/{account_id}", response_model=List[CybercrimeComplaintResponse])
 def get_complaints_for_account(account_id: str, db: Session = Depends(get_db)):

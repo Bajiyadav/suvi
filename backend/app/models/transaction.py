@@ -37,6 +37,8 @@ class Transaction(Base):
     narrative = Column(String(256), nullable=True)
     status = Column(String(32), default=TransactionStatus.SUCCESS.value)
     pattern_tag = Column(String(32), default=PatternTag.NORMAL.value)
+    device_id = Column(String(64), nullable=True, index=True)
+    ip_address = Column(String(64), nullable=True)
     location = Column(String(128), default="Bengaluru, KA")
 
     # Relationships

@@ -12,6 +12,8 @@ class AccountBase(BaseModel):
     account_category: str
     registered_mobile_masked: str
     upi_vpa: Optional[str] = None
+    device_id: Optional[str] = None
+    ip_address: Optional[str] = None
     opened_date: datetime
     current_balance: float
     status: str

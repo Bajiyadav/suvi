@@ -14,6 +14,8 @@ class CybercrimeComplaintResponse(BaseModel):
     police_station_jurisdiction: str
     linked_accounts_count: int
     description: Optional[str] = None
+    link_reason: Optional[str] = None
+    supporting_evidence: Optional[List[str]] = None
 
     class Config:
         from_attributes = True
