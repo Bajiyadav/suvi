@@ -1,13 +1,15 @@
 'use client';
 
 import React from 'react';
-import { FileDown, BookmarkPlus, Download, Send, ShieldCheck } from 'lucide-react';
+import { FileDown, BookmarkPlus, Download, Send, ShieldCheck, Check, Loader2 } from 'lucide-react';
 
 interface InvestigationActionsProps {
   onGenerateReport: () => void;
   onAddToWatchlist?: () => void;
   onExportNetwork?: () => void;
   onShareAgency?: () => void;
+  isWatchlisted?: boolean;
+  isSubmittingWatchlist?: boolean;
 }
 
 export const InvestigationActions: React.FC<InvestigationActionsProps> = ({
@@ -15,6 +17,8 @@ export const InvestigationActions: React.FC<InvestigationActionsProps> = ({
   onAddToWatchlist,
   onExportNetwork,
   onShareAgency,
+  isWatchlisted = false,
+  isSubmittingWatchlist = false,
 }) => {
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-col justify-between">
@@ -36,10 +40,21 @@ export const InvestigationActions: React.FC<InvestigationActionsProps> = ({
 
           <button
             onClick={onAddToWatchlist}
-            className="flex items-center justify-center space-x-1.5 py-2.5 px-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition"
+            disabled={isSubmittingWatchlist || isWatchlisted}
+            className={`flex items-center justify-center space-x-1.5 py-2.5 px-3 rounded-lg text-xs font-semibold border transition ${
+              isWatchlisted
+                ? 'bg-amber-50 text-amber-800 border-amber-200 cursor-default'
+                : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
+            }`}
           >
-            <BookmarkPlus className="w-3.5 h-3.5 text-slate-500" />
-            <span>Add to Watchlist</span>
+            {isSubmittingWatchlist ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-500" />
+            ) : isWatchlisted ? (
+              <Check className="w-3.5 h-3.5 text-amber-600" />
+            ) : (
+              <BookmarkPlus className="w-3.5 h-3.5 text-slate-500" />
+            )}
+            <span>{isWatchlisted ? 'In Watchlist' : 'Add to Watchlist'}</span>
           </button>
 
           <button

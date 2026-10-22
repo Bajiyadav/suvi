@@ -55,6 +55,7 @@ export interface ContributingFactor {
   percentage_impact: number;
   summary: string;
   evidence_references: string[];
+  evidence_rows?: Record<string, any>[];
 }
 
 export interface RiskExplanation {
@@ -119,4 +120,109 @@ export interface DashboardData {
   linked_complaints: CybercrimeComplaint[];
   associated_entities: AssociatedEntity[];
   network_graph: NetworkGraphData;
+}
+
+export interface DossierMetadata {
+  report_id: string;
+  case_reference: string;
+  generation_timestamp: string;
+  generating_agency: string;
+  classification: string;
+  synthetic_notice: string;
+}
+
+export interface TargetAccountDossier {
+  account_id: string;
+  account_number_masked: string;
+  bank_name: string;
+  account_holder_name: string;
+  registered_mobile: string;
+  status: string;
+}
+
+export interface InvestigativeConclusions {
+  recommended_action: string;
+  rationale: string;
+}
+
+export interface DossierData {
+  dossier_metadata: DossierMetadata;
+  target_account: TargetAccountDossier;
+  risk_assessment: RiskExplanation;
+  transaction_flow_analysis: FlowAnalysisSummary;
+  money_trail_sequence: {
+    root_account_id: string;
+    total_hops_traced: number;
+    hops: any[];
+  };
+  linked_cybercrime_complaints: CybercrimeComplaint[];
+  associated_entities: AssociatedEntity[];
+  investigative_conclusions: InvestigativeConclusions;
+}
+
+export interface WatchlistEntry {
+  entry_id: string;
+  account_id: string;
+  account_number_masked?: string;
+  bank_name?: string;
+  risk_score?: number;
+  reason?: string;
+  priority: string;
+  added_at: string;
+  investigator_id?: string;
+  is_active: boolean;
+  removed_at?: string;
+}
+
+export interface InvestigationNote {
+  note_id: string;
+  account_id: string;
+  case_id?: string;
+  note_text: string;
+  author?: string;
+  created_at: string;
+}
+
+export interface FullAccount {
+  account_id: string;
+  account_number_masked: string;
+  bank_name: string;
+  branch_code?: string;
+  account_holder_name: string;
+  account_type: string;
+  account_category: string;
+  registered_mobile_masked: string;
+  upi_vpa?: string;
+  opened_date: string;
+  current_balance: number;
+  status: string;
+  risk_score: number;
+  risk_tier: string;
+  key_indicators?: string;
+}
+
+export interface FullTransaction {
+  transaction_id: string;
+  sender_account_id: string;
+  receiver_account_id: string;
+  amount: number;
+  timestamp: string;
+  channel: string;
+  narrative?: string;
+  status: string;
+  pattern_tag?: string;
+  location?: string;
+  sender_masked?: string;
+  receiver_masked?: string;
+}
+
+export interface AuditLogEntry {
+  audit_id: string;
+  timestamp: string;
+  action_type: string;
+  resource_type: string;
+  resource_id?: string;
+  investigator_id?: string;
+  status: string;
+  details?: Record<string, any>;
 }
