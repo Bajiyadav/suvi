@@ -22,9 +22,10 @@ interface DossierModalProps {
   isOpen: boolean;
   onClose: () => void;
   accountId: string;
+  onSelectAccount?: (accountId: string) => void;
 }
 
-export const DossierModal: React.FC<DossierModalProps> = ({ isOpen, onClose, accountId }) => {
+export const DossierModal: React.FC<DossierModalProps> = ({ isOpen, onClose, accountId, onSelectAccount }) => {
   const [activeTab, setActiveTab] = useState<'summary' | 'json'>('summary');
   const [isCopied, setIsCopied] = useState(false);
   const [dossierData, setDossierData] = useState<DossierData | null>(null);
@@ -177,7 +178,7 @@ export const DossierModal: React.FC<DossierModalProps> = ({ isOpen, onClose, acc
 
           {/* HTTP 404 / Missing Account State */}
           {!isLoading && isNotFound && (
-            <div className="py-12 px-6 flex flex-col items-center text-center space-y-3 bg-red-50/60 rounded-xl border border-red-200">
+            <div className="py-12 px-6 flex flex-col items-center text-center space-y-4 bg-red-50/60 rounded-xl border border-red-200">
               <ShieldAlert className="w-12 h-12 text-red-500" />
               <h4 className="text-base font-bold text-red-900">HTTP 404 — Account Not Found</h4>
               <p className="text-xs text-red-700 max-w-lg leading-relaxed">
@@ -186,6 +187,34 @@ export const DossierModal: React.FC<DossierModalProps> = ({ isOpen, onClose, acc
               <div className="p-3 bg-white/80 rounded-lg border border-red-200 text-[11px] text-slate-600 max-w-lg">
                 <strong>Compliance Guarantee:</strong> FraudTrace AI strictly refuses to fabricate identities, fund flows, or evidence dossiers for nonexistent accounts.
               </div>
+
+              {onSelectAccount && (
+                <div className="pt-2 flex flex-col items-center space-y-2">
+                  <span className="text-[11px] font-semibold text-slate-600">
+                    Switch to an existing verified account:
+                  </span>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    <button
+                      onClick={() => onSelectAccount('ACC-4321')}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition shadow-xs"
+                    >
+                      Primary Mule (ACC-4321)
+                    </button>
+                    <button
+                      onClick={() => onSelectAccount('ACC-8765')}
+                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-medium rounded-lg transition"
+                    >
+                      Syndicate Aggregator (ACC-8765)
+                    </button>
+                    <button
+                      onClick={() => onSelectAccount('ACC-1122')}
+                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-medium rounded-lg transition"
+                    >
+                      Extortion Mule (ACC-1122)
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

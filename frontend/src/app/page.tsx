@@ -416,6 +416,7 @@ export default function DashboardPage() {
         isOpen={isDossierOpen}
         onClose={() => setIsDossierOpen(false)}
         accountId={selectedAccountId}
+        onSelectAccount={handleSelectAccount}
       />
 
       {/* Autonomous Investigation AI Copilot Drawer */}

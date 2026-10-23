@@ -27,16 +27,18 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
   onSelectAccount,
 }) => {
   const [selectedAcc, setSelectedAcc] = useState(currentAccountId || 'ACC-4321');
+  const [customInput, setCustomInput] = useState('');
 
   const handleDownloadPdf = (accId: string) => {
     window.open(`${API_BASE_URL}/reports/download-pdf/${encodeURIComponent(accId)}`, '_blank');
   };
 
   const sampleAccounts = [
-    { id: 'ACC-4321', label: 'Primary Target (ACC-4321) - Score 96', risk: 'HIGH' },
-    { id: 'ACC-7788', label: 'Layering Intermediary (ACC-7788) - Score 64', risk: 'MEDIUM' },
-    { id: 'ACC-9901', label: 'Mule Inflow Account (ACC-9901) - Score 74', risk: 'HIGH' },
-    { id: 'ACC-5522', label: 'Downstream Cash-out (ACC-5522) - Score 48', risk: 'MEDIUM' },
+    { id: 'ACC-4321', label: 'Primary Target Mule (Ramesh K.) - Score 100', risk: 'HIGH' },
+    { id: 'ACC-8765', label: 'Task Fraud Aggregator (Deepak S.) - Score 91', risk: 'HIGH' },
+    { id: 'ACC-1122', label: 'Extortion Mule Intermediary (Vikas P.) - Score 59', risk: 'MEDIUM' },
+    { id: 'ACC-7788', label: 'Phishing Victim Inflow (Sunita L.) - Score 41', risk: 'MEDIUM' },
+    { id: 'ACC-5555', label: 'Downstream Layer-2 Mule (Vijay D.) - Score 33', risk: 'LOW' },
   ];
 
   return (
@@ -73,11 +75,42 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             Select Account for Dossier
           </h2>
 
+          {/* Custom Account Input */}
+          <div className="flex items-center space-x-1.5">
+            <input
+              type="text"
+              placeholder="Enter Account ID (e.g. ACC-4321)"
+              value={customInput}
+              onChange={(e) => setCustomInput(e.target.value.toUpperCase())}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && customInput.trim()) {
+                  setSelectedAcc(customInput.trim());
+                  onSelectAccount(customInput.trim());
+                }
+              }}
+              className="flex-1 px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-mono placeholder:font-sans focus:outline-none focus:ring-1 focus:ring-blue-500 uppercase"
+            />
+            <button
+              onClick={() => {
+                if (customInput.trim()) {
+                  setSelectedAcc(customInput.trim());
+                  onSelectAccount(customInput.trim());
+                }
+              }}
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-medium rounded-lg transition"
+            >
+              Set
+            </button>
+          </div>
+
           <div className="space-y-2">
             {sampleAccounts.map((acc) => (
               <button
                 key={acc.id}
-                onClick={() => setSelectedAcc(acc.id)}
+                onClick={() => {
+                  setSelectedAcc(acc.id);
+                  onSelectAccount(acc.id);
+                }}
                 className={`w-full text-left p-3 rounded-lg border text-xs transition flex items-center justify-between ${
                   selectedAcc === acc.id
                     ? 'border-blue-500 bg-blue-50/50 text-blue-900 font-semibold shadow-xs'
