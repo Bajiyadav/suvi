@@ -255,5 +255,30 @@ export async function fetchSolvedCaseById(
   return await res.json();
 }
 
+export async function queryCopilot(
+  query: string,
+  context?: {
+    active_tab?: string;
+    focused_account_id?: string;
+    focused_case_id?: string;
+  }
+): Promise<import('../types').CopilotResponse> {
+  const res = await fetch(`${API_BASE_URL}/copilot/query`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      query,
+      active_tab: context?.active_tab,
+      focused_account_id: context?.focused_account_id,
+      focused_case_id: context?.focused_case_id,
+    }),
+  });
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.detail || `AI Copilot query failed (${res.status})`);
+  }
+  return await res.json();
+}
+
 
 

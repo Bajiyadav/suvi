@@ -271,4 +271,27 @@ export interface SolvedCase {
   created_at?: string;
 }
 
+export interface CopilotAction {
+  label: string;
+  action_type: 'open_account' | 'open_case' | 'open_tab' | 'copy_legal_notice';
+  payload: string;
+}
+
+export interface CopilotEntity {
+  type: string;
+  id: string;
+  label: string;
+  detail?: string;
+}
+
+export interface CopilotResponse {
+  query: string;
+  answer: string;
+  suggested_actions: CopilotAction[];
+  related_entities: CopilotEntity[];
+  confidence: number;
+  response_time_ms: number;
+  ground_truth_sources: string[];
+}
+
 

@@ -27,6 +27,7 @@ import { SolvedCasesView } from '@/features/investigations/SolvedCasesView';
 import { DataManagementView } from '@/features/overview/DataManagementView';
 import { SettingsView } from '@/features/overview/SettingsView';
 import { HelpDocumentationView } from '@/features/overview/HelpDocumentationView';
+import { AICopilotDrawer } from '@/features/copilot/AICopilotDrawer';
 
 import {
   fetchDashboardData,
@@ -36,7 +37,7 @@ import {
   API_BASE_URL
 } from '@/lib/api';
 import { DashboardData, WatchlistEntry } from '@/types';
-import { CheckCircle2, AlertTriangle, Info, X } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Info, X, Bot } from 'lucide-react';
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -44,6 +45,7 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData>(getEmptyDashboardData('ACC-4321'));
   const [watchlist, setWatchlist] = useState<WatchlistEntry[]>([]);
   const [isDossierOpen, setIsDossierOpen] = useState(false);
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -52,6 +54,18 @@ export default function DashboardPage() {
     type: 'success' | 'error' | 'info';
     message: string;
   } | null>(null);
+
+  // Keyboard shortcut Ctrl+J / Cmd+J to toggle AI Copilot
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'j') {
+        e.preventDefault();
+        setIsCopilotOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Load dashboard data whenever selectedAccountId changes
   useEffect(() => {
@@ -180,7 +194,10 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Top Header */}
-      <Header onSearch={handleHeaderSearch} />
+      <Header
+        onSearch={handleHeaderSearch}
+        onOpenCopilot={() => setIsCopilotOpen((prev) => !prev)}
+      />
 
       {/* Notification Toast */}
       {notification && (
@@ -400,6 +417,36 @@ export default function DashboardPage() {
         onClose={() => setIsDossierOpen(false)}
         accountId={selectedAccountId}
       />
+
+      {/* Autonomous Investigation AI Copilot Drawer */}
+      <AICopilotDrawer
+        isOpen={isCopilotOpen}
+        onClose={() => setIsCopilotOpen(false)}
+        onSelectTab={(tab) => setActiveTab(tab)}
+        onSelectAccount={(acc) => {
+          handleSelectAccount(acc);
+          setActiveTab('network');
+        }}
+        activeTab={activeTab}
+        focusedAccountId={selectedAccountId}
+      />
+
+      {/* Floating AI Copilot Launcher Badge */}
+      {!isCopilotOpen && (
+        <button
+          onClick={() => setIsCopilotOpen(true)}
+          className="fixed bottom-6 right-6 z-40 px-4 py-2.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white rounded-2xl shadow-xl shadow-blue-500/30 flex items-center space-x-2.5 transition transform hover:scale-105 border border-blue-400/40 group"
+          title="Open AI Investigation Copilot (Ctrl+J)"
+        >
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+          </span>
+          <Bot className="w-4 h-4 text-amber-300 group-hover:rotate-12 transition-transform" />
+          <span className="text-xs font-bold tracking-wide">AI Copilot</span>
+          <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded font-mono font-medium">⌘J</span>
+        </button>
+      )}
     </div>
   );
 }
