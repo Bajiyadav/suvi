@@ -1,0 +1,12 @@
+{
+  "name": "suvi-fraudtrace-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FraudTrace AI - Financial Crime Investigation & Mule Account Detection Platform (Team SUVI)",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "start": "npm --prefix frontend run start",
+    "lint": "npm --prefix frontend run lint"
+  }
+}
