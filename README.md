@@ -10,6 +10,11 @@
 
 > **FraudTrace AI Cyber Copilot** is an enterprise-grade, explainable financial cybercrime investigation system engineered for **Team SUVI (Cyber Hackathon 2026, Problem Statement PS-01)**. Developed specifically for State Cyber Crime Cells, Law Enforcement Agencies (LEAs), and Financial Intelligence Units (FIUs), the platform uncovers organized money mule networks, traces multi-hop fund trails across banking layers, correlates 1930 / NCRP cybercrime complaints, and produces court-admissible forensic dossiers with one-click statutory bank freeze notices.
 
+### 🎥 Official Demo Video Walkthrough
+* **Google Drive:** [https://drive.google.com/file/d/13I-KtK_cbLAeBuZX5K1AW0StdP2QRIi-/view?usp=sharing](https://drive.google.com/file/d/13I-KtK_cbLAeBuZX5K1AW0StdP2QRIi-/view?usp=sharing)
+* **GitHub Release (Direct Download):** [https://github.com/Bajiyadav/suvi/releases/tag/v1.0.0](https://github.com/Bajiyadav/suvi/releases/tag/v1.0.0)
+* **Interactive Live Demo:** [https://weak-items-hug.loca.lt](https://weak-items-hug.loca.lt) *(Password: `106.219.64.246`)*
+
 ---
 
 ## 📑 Table of Contents
