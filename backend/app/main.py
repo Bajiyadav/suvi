@@ -1,11 +1,15 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
+from app.core.security import get_current_investigator
 from app.core.database import Base, engine, SessionLocal
 from app.models.account import Account
 from app.api.v1.api import api_router
 from app.seed.generate_fixtures import seed_database
 import os
+
+# Validate configuration on startup (fails closed if production secrets are missing/insecure)
+settings.validate_production_configuration()
 
 # Initialize database schema on startup if database file not yet created
 Base.metadata.create_all(bind=engine)
@@ -35,10 +39,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register API v1 routes
-app.include_router(api_router, prefix=settings.API_V1_PREFIX)
+from app.core.rate_limiter import RateLimitMiddleware
+
+# Configure API Rate Limiting (Sliding Window & DoS Throttling)
+app.add_middleware(RateLimitMiddleware)
+
+from app.api.v1.endpoints import auth
+
+# Mount Authentication router (login is public; me/logout require authentication)
+app.include_router(
+    auth.router,
+    prefix=f"{settings.API_V1_PREFIX}/auth",
+    tags=["Authentication"]
+)
+
+# Register API v1 routes with global investigator authentication dependency
+app.include_router(
+    api_router,
+    prefix=settings.API_V1_PREFIX,
+    dependencies=[Depends(get_current_investigator)]
+)
 
 @app.get("/health", tags=["Health"])
+@app.get("/api/v1/health", tags=["Health"])
 def health_check():
     return {
         "status": "healthy",
